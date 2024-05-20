@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+      "target": "ES6",
+      "module": "commonjs",
+      "strict": true,
+      "esModuleInterop": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "files":[
+    "./src/types/fastify.d.ts",
+    "./src/types/fastify-jwt.d.ts"
+  ]
+}

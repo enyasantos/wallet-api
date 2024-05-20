@@ -1,0 +1,22 @@
+# Arquivos e diretórios gerados pela execução do código
+/node_modules
+/dist
+
+# Arquivos de log
+/logs
+
+# Arquivos de configuração local
+.env
+
+# Arquivos de compilação do TypeScript
+*.js
+*.map
+
+# Arquivos de banco de dados local
+/*.db
+
+# Arquivos temporários
+*.tmp
+
+# Arquivos de cache
+.cache

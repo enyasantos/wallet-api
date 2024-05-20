@@ -1,0 +1,291 @@
+[2024-05-19T21:58:20.307Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T21:58:20.324Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T21:58:20.326Z][QUERY]: SELECT version();
+[2024-05-19T21:58:20.329Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T21:58:20.330Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T21:58:20.331Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T21:58:20.340Z][QUERY]: SELECT TRUE FROM information_schema.columns WHERE table_name = 'pg_class' and column_name = 'relispartition'
+[2024-05-19T21:58:20.346Z][QUERY]: SELECT columns.*, pg_catalog.col_description(('"' || table_catalog || '"."' || table_schema || '"."' || table_name || '"')::regclass::oid, ordinal_position) AS description, ('"' || "udt_schema" || '"."' || "udt_name" || '"')::"regtype" AS "regtype", pg_catalog.format_type("col_attr"."atttypid", "col_attr"."atttypmod") AS "format_type" FROM "information_schema"."columns" LEFT JOIN "pg_catalog"."pg_attribute" AS "col_attr" ON "col_attr"."attname" = "columns"."column_name" AND "col_attr"."attrelid" = ( SELECT "cls"."oid" FROM "pg_catalog"."pg_class" AS "cls" LEFT JOIN "pg_catalog"."pg_namespace" AS "ns" ON "ns"."oid" = "cls"."relnamespace" WHERE "cls"."relname" = "columns"."table_name" AND "ns"."nspname" = "columns"."table_schema" ) WHERE ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction') OR ("table_schema" = 'public' AND "table_name" = 'user')
+[2024-05-19T21:58:20.347Z][QUERY]: SELECT "ns"."nspname" AS "table_schema", "t"."relname" AS "table_name", "cnst"."conname" AS "constraint_name", pg_get_constraintdef("cnst"."oid") AS "expression", CASE "cnst"."contype" WHEN 'p' THEN 'PRIMARY' WHEN 'u' THEN 'UNIQUE' WHEN 'c' THEN 'CHECK' WHEN 'x' THEN 'EXCLUDE' END AS "constraint_type", "a"."attname" AS "column_name" FROM "pg_constraint" "cnst" INNER JOIN "pg_class" "t" ON "t"."oid" = "cnst"."conrelid" INNER JOIN "pg_namespace" "ns" ON "ns"."oid" = "cnst"."connamespace" LEFT JOIN "pg_attribute" "a" ON "a"."attrelid" = "cnst"."conrelid" AND "a"."attnum" = ANY ("cnst"."conkey") WHERE "t"."relkind" IN ('r', 'p') AND (("ns"."nspname" = 'public' AND "t"."relname" = 'wallet') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'transaction') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'user'))
+[2024-05-19T21:58:20.347Z][QUERY]: SELECT "ns"."nspname" AS "table_schema", "t"."relname" AS "table_name", "i"."relname" AS "constraint_name", "a"."attname" AS "column_name", CASE "ix"."indisunique" WHEN 't' THEN 'TRUE' ELSE'FALSE' END AS "is_unique", pg_get_expr("ix"."indpred", "ix"."indrelid") AS "condition", "types"."typname" AS "type_name", "am"."amname" AS "index_type" FROM "pg_class" "t" INNER JOIN "pg_index" "ix" ON "ix"."indrelid" = "t"."oid" INNER JOIN "pg_attribute" "a" ON "a"."attrelid" = "t"."oid"  AND "a"."attnum" = ANY ("ix"."indkey") INNER JOIN "pg_namespace" "ns" ON "ns"."oid" = "t"."relnamespace" INNER JOIN "pg_class" "i" ON "i"."oid" = "ix"."indexrelid" INNER JOIN "pg_type" "types" ON "types"."oid" = "a"."atttypid" INNER JOIN "pg_am" "am" ON "i"."relam" = "am"."oid" LEFT JOIN "pg_constraint" "cnst" ON "cnst"."conname" = "i"."relname" WHERE "t"."relkind" IN ('r', 'p') AND "cnst"."contype" IS NULL AND (("ns"."nspname" = 'public' AND "t"."relname" = 'wallet') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'transaction') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'user'))
+[2024-05-19T21:58:20.347Z][QUERY]: SELECT "con"."conname" AS "constraint_name", "con"."nspname" AS "table_schema", "con"."relname" AS "table_name", "att2"."attname" AS "column_name", "ns"."nspname" AS "referenced_table_schema", "cl"."relname" AS "referenced_table_name", "att"."attname" AS "referenced_column_name", "con"."confdeltype" AS "on_delete", "con"."confupdtype" AS "on_update", "con"."condeferrable" AS "deferrable", "con"."condeferred" AS "deferred" FROM ( SELECT UNNEST ("con1"."conkey") AS "parent", UNNEST ("con1"."confkey") AS "child", "con1"."confrelid", "con1"."conrelid", "con1"."conname", "con1"."contype", "ns"."nspname", "cl"."relname", "con1"."condeferrable", CASE WHEN "con1"."condeferred" THEN 'INITIALLY DEFERRED' ELSE 'INITIALLY IMMEDIATE' END as condeferred, CASE "con1"."confdeltype" WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END as "confdeltype", CASE "con1"."confupdtype" WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END as "confupdtype" FROM "pg_class" "cl" INNER JOIN "pg_namespace" "ns" ON "cl"."relnamespace" = "ns"."oid" INNER JOIN "pg_constraint" "con1" ON "con1"."conrelid" = "cl"."oid" WHERE "con1"."contype" = 'f' AND (("ns"."nspname" = 'public' AND "cl"."relname" = 'wallet') OR ("ns"."nspname" = 'public' AND "cl"."relname" = 'transaction') OR ("ns"."nspname" = 'public' AND "cl"."relname" = 'user')) ) "con" INNER JOIN "pg_attribute" "att" ON "att"."attrelid" = "con"."confrelid" AND "att"."attnum" = "con"."child" INNER JOIN "pg_class" "cl" ON "cl"."oid" = "con"."confrelid"  AND "cl"."relispartition" = 'f'INNER JOIN "pg_namespace" "ns" ON "cl"."relnamespace" = "ns"."oid" INNER JOIN "pg_attribute" "att2" ON "att2"."attrelid" = "con"."conrelid" AND "att2"."attnum" = "con"."parent"
+[2024-05-19T21:58:20.366Z][QUERY]: SELECT "udt_schema", "udt_name" FROM "information_schema"."columns" WHERE "table_schema" = 'public' AND "table_name" = 'transaction' AND "column_name"='type'
+[2024-05-19T21:58:20.367Z][QUERY]: SELECT "udt_schema", "udt_name" FROM "information_schema"."columns" WHERE "table_schema" = 'public' AND "table_name" = 'transaction' AND "column_name"='status'
+[2024-05-19T21:58:20.369Z][QUERY]: SELECT "e"."enumlabel" AS "value" FROM "pg_enum" "e" INNER JOIN "pg_type" "t" ON "t"."oid" = "e"."enumtypid" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T21:58:20.371Z][QUERY]: SELECT "e"."enumlabel" AS "value" FROM "pg_enum" "e" INNER JOIN "pg_type" "t" ON "t"."oid" = "e"."enumtypid" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T21:58:20.374Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T21:59:15.801Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T21:59:15.816Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T21:59:15.818Z][QUERY]: SELECT version();
+[2024-05-19T21:59:15.819Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-19T21:59:15.825Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-19T21:59:15.827Z]No migrations were found in the database. Nothing to revert!
+[2024-05-19T22:01:01.296Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:01:01.307Z][QUERY]: SELECT version();
+[2024-05-19T22:01:01.309Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-19T22:01:01.314Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-19T22:01:01.316Z]No migrations were found in the database. Nothing to revert!
+[2024-05-19T22:01:08.282Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:01:08.293Z][QUERY]: SELECT version();
+[2024-05-19T22:01:08.296Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:02:16.346Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:02:16.361Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:02:16.364Z][QUERY]: SELECT version();
+[2024-05-19T22:02:16.366Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:02:16.368Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T22:02:16.369Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T22:02:16.372Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:02:16.377Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T22:02:16.378Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T22:03:04.049Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:03:04.064Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:03:04.066Z][QUERY]: SELECT version();
+[2024-05-19T22:03:04.068Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-19T22:03:04.072Z][QUERY]: CREATE TABLE "migrations" ("id" SERIAL NOT NULL, "timestamp" bigint NOT NULL, "name" character varying NOT NULL, CONSTRAINT "PK_8c82d7f526340ab734260ea46be" PRIMARY KEY ("id"))
+[2024-05-19T22:03:04.088Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-19T22:03:04.090Z]No migrations were found in the database. Nothing to revert!
+[2024-05-19T22:03:08.282Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:03:08.297Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:03:08.299Z][QUERY]: SELECT version();
+[2024-05-19T22:03:08.302Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:03:08.303Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T22:03:08.304Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T22:03:08.307Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:03:08.311Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T22:03:08.313Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T22:03:43.725Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:03:43.740Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:03:43.742Z][QUERY]: SELECT version();
+[2024-05-19T22:03:43.744Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:03:43.745Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T22:03:43.746Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T22:03:43.749Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:03:43.753Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T22:03:43.755Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T22:04:40.650Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:04:40.666Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:04:40.668Z][QUERY]: SELECT version();
+[2024-05-19T22:04:40.671Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:04:40.672Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T22:04:40.673Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T22:04:40.676Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:04:40.681Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T22:04:40.682Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T22:05:11.348Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:05:11.363Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:05:11.365Z][QUERY]: SELECT version();
+[2024-05-19T22:05:11.367Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:05:11.369Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T22:05:11.370Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T22:05:11.373Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:05:11.378Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T22:05:11.379Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T22:05:39.750Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:05:39.769Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:05:39.771Z][QUERY]: SELECT version();
+[2024-05-19T22:05:39.773Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:05:39.774Z][QUERY]: SELECT * FROM current_database()
+[2024-05-19T22:05:39.775Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction')
+[2024-05-19T22:05:39.778Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-19T22:05:39.782Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-19T22:05:39.783Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-19T22:05:59.644Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:05:59.660Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:05:59.662Z][QUERY]: SELECT version();
+[2024-05-19T22:05:59.664Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-19T22:05:59.669Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-19T22:05:59.671Z]No migrations are pending
+[2024-05-19T22:06:57.565Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:06:57.580Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:06:57.582Z][QUERY]: SELECT version();
+[2024-05-19T22:06:57.584Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-19T22:06:57.588Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-19T22:06:57.590Z]No migrations are pending
+[2024-05-19T22:10:27.192Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:11:26.239Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-19T22:11:26.337Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-19T22:11:26.339Z][QUERY]: SELECT version();
+[2024-05-19T22:11:26.341Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-19T22:11:26.346Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-19T22:11:26.347Z]0 migrations are already loaded in the database.
+[2024-05-19T22:11:26.347Z]1 migrations were found in the source code.
+[2024-05-19T22:11:26.348Z]1 migrations are new migrations must be executed.
+[2024-05-19T22:11:26.348Z][QUERY]: START TRANSACTION
+[2024-05-19T22:11:26.349Z][QUERY]: CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(500) NOT NULL, "password" character varying(500) NOT NULL, "email" character varying(500) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-05-19T22:11:26.364Z][QUERY]: CREATE TABLE "wallet" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(500) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "REL_35472b1fe48b6330cd34970956" UNIQUE ("userId"), CONSTRAINT "PK_bec464dd8d54c39c54fd32e2334" PRIMARY KEY ("id"))
+[2024-05-19T22:11:26.375Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-19T22:11:26.384Z][QUERY]: ALTER TABLE "wallet" ADD CONSTRAINT "FK_35472b1fe48b6330cd349709564" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-05-19T22:11:26.388Z][QUERY]: ALTER TABLE "transaction" ADD CONSTRAINT "FK_900eb6b5efaecf57343e4c0e79d" FOREIGN KEY ("walletId") REFERENCES "wallet"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-05-19T22:11:26.390Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716156338593,"Migrations1716156338593"]
+[2024-05-19T22:11:26.437Z]Migration Migrations1716156338593 has been  executed successfully.
+[2024-05-19T22:11:26.437Z][QUERY]: COMMIT
+[2024-05-20T01:13:45.476Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:13:45.644Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:13:45.647Z][QUERY]: SELECT version();
+[2024-05-20T01:13:45.650Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:13:45.651Z][QUERY]: SELECT * FROM current_database()
+[2024-05-20T01:13:45.652Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'transaction') OR ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet')
+[2024-05-20T01:13:45.662Z][QUERY]: SELECT TRUE FROM information_schema.columns WHERE table_name = 'pg_class' and column_name = 'relispartition'
+[2024-05-20T01:13:45.667Z][QUERY]: SELECT columns.*, pg_catalog.col_description(('"' || table_catalog || '"."' || table_schema || '"."' || table_name || '"')::regclass::oid, ordinal_position) AS description, ('"' || "udt_schema" || '"."' || "udt_name" || '"')::"regtype" AS "regtype", pg_catalog.format_type("col_attr"."atttypid", "col_attr"."atttypmod") AS "format_type" FROM "information_schema"."columns" LEFT JOIN "pg_catalog"."pg_attribute" AS "col_attr" ON "col_attr"."attname" = "columns"."column_name" AND "col_attr"."attrelid" = ( SELECT "cls"."oid" FROM "pg_catalog"."pg_class" AS "cls" LEFT JOIN "pg_catalog"."pg_namespace" AS "ns" ON "ns"."oid" = "cls"."relnamespace" WHERE "cls"."relname" = "columns"."table_name" AND "ns"."nspname" = "columns"."table_schema" ) WHERE ("table_schema" = 'public' AND "table_name" = 'wallet') OR ("table_schema" = 'public' AND "table_name" = 'transaction') OR ("table_schema" = 'public' AND "table_name" = 'user')
+[2024-05-20T01:13:45.668Z][QUERY]: SELECT "ns"."nspname" AS "table_schema", "t"."relname" AS "table_name", "cnst"."conname" AS "constraint_name", pg_get_constraintdef("cnst"."oid") AS "expression", CASE "cnst"."contype" WHEN 'p' THEN 'PRIMARY' WHEN 'u' THEN 'UNIQUE' WHEN 'c' THEN 'CHECK' WHEN 'x' THEN 'EXCLUDE' END AS "constraint_type", "a"."attname" AS "column_name" FROM "pg_constraint" "cnst" INNER JOIN "pg_class" "t" ON "t"."oid" = "cnst"."conrelid" INNER JOIN "pg_namespace" "ns" ON "ns"."oid" = "cnst"."connamespace" LEFT JOIN "pg_attribute" "a" ON "a"."attrelid" = "cnst"."conrelid" AND "a"."attnum" = ANY ("cnst"."conkey") WHERE "t"."relkind" IN ('r', 'p') AND (("ns"."nspname" = 'public' AND "t"."relname" = 'wallet') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'transaction') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'user'))
+[2024-05-20T01:13:45.668Z][QUERY]: SELECT "ns"."nspname" AS "table_schema", "t"."relname" AS "table_name", "i"."relname" AS "constraint_name", "a"."attname" AS "column_name", CASE "ix"."indisunique" WHEN 't' THEN 'TRUE' ELSE'FALSE' END AS "is_unique", pg_get_expr("ix"."indpred", "ix"."indrelid") AS "condition", "types"."typname" AS "type_name", "am"."amname" AS "index_type" FROM "pg_class" "t" INNER JOIN "pg_index" "ix" ON "ix"."indrelid" = "t"."oid" INNER JOIN "pg_attribute" "a" ON "a"."attrelid" = "t"."oid"  AND "a"."attnum" = ANY ("ix"."indkey") INNER JOIN "pg_namespace" "ns" ON "ns"."oid" = "t"."relnamespace" INNER JOIN "pg_class" "i" ON "i"."oid" = "ix"."indexrelid" INNER JOIN "pg_type" "types" ON "types"."oid" = "a"."atttypid" INNER JOIN "pg_am" "am" ON "i"."relam" = "am"."oid" LEFT JOIN "pg_constraint" "cnst" ON "cnst"."conname" = "i"."relname" WHERE "t"."relkind" IN ('r', 'p') AND "cnst"."contype" IS NULL AND (("ns"."nspname" = 'public' AND "t"."relname" = 'wallet') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'transaction') OR ("ns"."nspname" = 'public' AND "t"."relname" = 'user'))
+[2024-05-20T01:13:45.669Z][QUERY]: SELECT "con"."conname" AS "constraint_name", "con"."nspname" AS "table_schema", "con"."relname" AS "table_name", "att2"."attname" AS "column_name", "ns"."nspname" AS "referenced_table_schema", "cl"."relname" AS "referenced_table_name", "att"."attname" AS "referenced_column_name", "con"."confdeltype" AS "on_delete", "con"."confupdtype" AS "on_update", "con"."condeferrable" AS "deferrable", "con"."condeferred" AS "deferred" FROM ( SELECT UNNEST ("con1"."conkey") AS "parent", UNNEST ("con1"."confkey") AS "child", "con1"."confrelid", "con1"."conrelid", "con1"."conname", "con1"."contype", "ns"."nspname", "cl"."relname", "con1"."condeferrable", CASE WHEN "con1"."condeferred" THEN 'INITIALLY DEFERRED' ELSE 'INITIALLY IMMEDIATE' END as condeferred, CASE "con1"."confdeltype" WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END as "confdeltype", CASE "con1"."confupdtype" WHEN 'a' THEN 'NO ACTION' WHEN 'r' THEN 'RESTRICT' WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' END as "confupdtype" FROM "pg_class" "cl" INNER JOIN "pg_namespace" "ns" ON "cl"."relnamespace" = "ns"."oid" INNER JOIN "pg_constraint" "con1" ON "con1"."conrelid" = "cl"."oid" WHERE "con1"."contype" = 'f' AND (("ns"."nspname" = 'public' AND "cl"."relname" = 'wallet') OR ("ns"."nspname" = 'public' AND "cl"."relname" = 'transaction') OR ("ns"."nspname" = 'public' AND "cl"."relname" = 'user')) ) "con" INNER JOIN "pg_attribute" "att" ON "att"."attrelid" = "con"."confrelid" AND "att"."attnum" = "con"."child" INNER JOIN "pg_class" "cl" ON "cl"."oid" = "con"."confrelid"  AND "cl"."relispartition" = 'f'INNER JOIN "pg_namespace" "ns" ON "cl"."relnamespace" = "ns"."oid" INNER JOIN "pg_attribute" "att2" ON "att2"."attrelid" = "con"."conrelid" AND "att2"."attnum" = "con"."parent"
+[2024-05-20T01:13:45.689Z][QUERY]: SELECT "udt_schema", "udt_name" FROM "information_schema"."columns" WHERE "table_schema" = 'public' AND "table_name" = 'transaction' AND "column_name"='type'
+[2024-05-20T01:13:45.689Z][QUERY]: SELECT "udt_schema", "udt_name" FROM "information_schema"."columns" WHERE "table_schema" = 'public' AND "table_name" = 'transaction' AND "column_name"='status'
+[2024-05-20T01:13:45.691Z][QUERY]: SELECT "e"."enumlabel" AS "value" FROM "pg_enum" "e" INNER JOIN "pg_type" "t" ON "t"."oid" = "e"."enumtypid" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-20T01:13:45.693Z][QUERY]: SELECT "e"."enumlabel" AS "value" FROM "pg_enum" "e" INNER JOIN "pg_type" "t" ON "t"."oid" = "e"."enumtypid" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-20T01:13:45.696Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-20T01:14:39.818Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:14:39.988Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:14:39.990Z][QUERY]: SELECT version();
+[2024-05-20T01:14:39.992Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:14:39.993Z][QUERY]: SELECT * FROM current_database()
+[2024-05-20T01:14:39.995Z][QUERY]: SELECT "table_schema", "table_name", obj_description(('"' || "table_schema" || '"."' || "table_name" || '"')::regclass, 'pg_class') AS table_comment FROM "information_schema"."tables" WHERE ("table_schema" = 'public' AND "table_name" = 'transaction') OR ("table_schema" = 'public' AND "table_name" = 'user') OR ("table_schema" = 'public' AND "table_name" = 'wallet')
+[2024-05-20T01:14:39.997Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'typeorm_metadata'
+[2024-05-20T01:14:40.000Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_type_enum'
+[2024-05-20T01:14:40.001Z][QUERY]: SELECT "n"."nspname", "t"."typname" FROM "pg_type" "t" INNER JOIN "pg_namespace" "n" ON "n"."oid" = "t"."typnamespace" WHERE "n"."nspname" = 'public' AND "t"."typname" = 'transaction_status_enum'
+[2024-05-20T01:19:28.098Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:19:28.316Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:19:28.318Z][QUERY]: SELECT version();
+[2024-05-20T01:19:28.320Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:19:28.326Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:19:28.328Z]0 migrations are already loaded in the database.
+[2024-05-20T01:19:28.329Z]2 migrations were found in the source code.
+[2024-05-20T01:19:28.329Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:19:28.329Z][QUERY]: START TRANSACTION
+[2024-05-20T01:19:28.330Z][QUERY]: CREATE TYPE type_transaction_type AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:19:28.332Z][QUERY]: CREATE TYPE status_transaction_type AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:19:28.334Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:19:28.377Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:19:28.377Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:19:28.379Z][FAILED QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:19:28.379Z][QUERY ERROR]: error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:19:28.389Z]Migration "Migrations1716167678758" failed, error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:19:28.390Z][QUERY]: ROLLBACK
+[2024-05-20T01:20:19.332Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:20:19.557Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:20:19.560Z][QUERY]: SELECT version();
+[2024-05-20T01:20:19.562Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:20:19.568Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:20:19.570Z]0 migrations are already loaded in the database.
+[2024-05-20T01:20:19.570Z]2 migrations were found in the source code.
+[2024-05-20T01:20:19.571Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:20:19.571Z][QUERY]: START TRANSACTION
+[2024-05-20T01:20:19.573Z][QUERY]: CREATE TYPE type_transaction_type AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:20:19.575Z][QUERY]: CREATE TYPE status_transaction_type AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:20:19.577Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:20:19.626Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:20:19.627Z][QUERY]: CREATE TYPE type_transaction_type AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:20:19.629Z][FAILED QUERY]: CREATE TYPE type_transaction_type AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:20:19.629Z][QUERY ERROR]: error: type "type_transaction_type" already exists
+[2024-05-20T01:20:19.639Z]Migration "Migrations1716167678758" failed, error: type "type_transaction_type" already exists
+[2024-05-20T01:20:19.639Z][QUERY]: ROLLBACK
+[2024-05-20T01:20:36.184Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:20:36.398Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:20:36.400Z][QUERY]: SELECT version();
+[2024-05-20T01:20:36.402Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:20:36.408Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:20:36.410Z]0 migrations are already loaded in the database.
+[2024-05-20T01:20:36.410Z]2 migrations were found in the source code.
+[2024-05-20T01:20:36.410Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:20:36.411Z][QUERY]: START TRANSACTION
+[2024-05-20T01:20:36.413Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:20:36.457Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:20:36.458Z][QUERY]: CREATE TYPE type_transaction_type AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:20:36.460Z][QUERY]: CREATE TYPE status_transaction_type AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:20:36.462Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:20:36.464Z][FAILED QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:20:36.464Z][QUERY ERROR]: error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:20:36.472Z]Migration "Migrations1716167678758" failed, error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:20:36.473Z][QUERY]: ROLLBACK
+[2024-05-20T01:22:50.307Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:22:50.531Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:22:50.533Z][QUERY]: SELECT version();
+[2024-05-20T01:22:50.535Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:22:50.541Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:22:50.543Z]0 migrations are already loaded in the database.
+[2024-05-20T01:22:50.543Z]2 migrations were found in the source code.
+[2024-05-20T01:22:50.543Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:22:50.544Z][QUERY]: START TRANSACTION
+[2024-05-20T01:22:50.545Z][QUERY]: CREATE TYPE "public"."type_transaction_type" AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:22:50.547Z][QUERY]: CREATE TYPE "public"."status_transaction_type" AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:22:50.550Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:22:50.596Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:22:50.596Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:22:50.598Z][FAILED QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:22:50.598Z][QUERY ERROR]: error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:22:50.606Z]Migration "Migrations1716167678758" failed, error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:22:50.606Z][QUERY]: ROLLBACK
+[2024-05-20T01:23:15.119Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:23:15.333Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:23:15.336Z][QUERY]: SELECT version();
+[2024-05-20T01:23:15.338Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:23:15.344Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:23:15.346Z]0 migrations are already loaded in the database.
+[2024-05-20T01:23:15.346Z]2 migrations were found in the source code.
+[2024-05-20T01:23:15.346Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:23:15.347Z][QUERY]: START TRANSACTION
+[2024-05-20T01:23:15.349Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:23:15.396Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:23:15.397Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:23:15.399Z][FAILED QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:23:15.399Z][QUERY ERROR]: error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:23:15.408Z]Migration "Migrations1716167678758" failed, error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:23:15.408Z][QUERY]: ROLLBACK
+[2024-05-20T01:23:47.781Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:23:48.000Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:23:48.002Z][QUERY]: SELECT version();
+[2024-05-20T01:23:48.004Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:23:48.010Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:23:48.012Z]0 migrations are already loaded in the database.
+[2024-05-20T01:23:48.012Z]2 migrations were found in the source code.
+[2024-05-20T01:23:48.013Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:23:48.013Z][QUERY]: START TRANSACTION
+[2024-05-20T01:23:48.015Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:23:48.066Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:23:48.066Z][QUERY]: CREATE TYPE public.type_transaction_type AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:23:48.068Z][QUERY]: CREATE TYPE public.tstatus_transaction_type AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:23:48.069Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:23:48.071Z][FAILED QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:23:48.071Z][QUERY ERROR]: error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:23:48.080Z]Migration "Migrations1716167678758" failed, error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:23:48.080Z][QUERY]: ROLLBACK
+[2024-05-20T01:24:41.544Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:24:41.771Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:24:41.773Z][QUERY]: SELECT version();
+[2024-05-20T01:24:41.775Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:24:41.781Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:24:41.783Z]0 migrations are already loaded in the database.
+[2024-05-20T01:24:41.783Z]2 migrations were found in the source code.
+[2024-05-20T01:24:41.783Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:24:41.784Z][QUERY]: START TRANSACTION
+[2024-05-20T01:24:41.785Z][QUERY]: CREATE TYPE "public"."type_transaction_enum" AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:24:41.786Z][QUERY]: CREATE TYPE "public"."status_transaction_enum" AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:24:41.789Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:24:41.836Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:24:41.837Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:24:41.838Z][FAILED QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:24:41.838Z][QUERY ERROR]: error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:24:41.848Z]Migration "Migrations1716167678758" failed, error: type "public.transaction_type_enum" does not exist
+[2024-05-20T01:24:41.848Z][QUERY]: ROLLBACK
+[2024-05-20T01:25:28.637Z][QUERY]: SELECT * FROM current_schema()
+[2024-05-20T01:25:28.853Z][QUERY]: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+[2024-05-20T01:25:28.855Z][QUERY]: SELECT version();
+[2024-05-20T01:25:28.857Z][QUERY]: SELECT * FROM "information_schema"."tables" WHERE "table_schema" = 'public' AND "table_name" = 'migrations'
+[2024-05-20T01:25:28.864Z][QUERY]: SELECT * FROM "migrations" "migrations" ORDER BY "id" DESC
+[2024-05-20T01:25:28.866Z]0 migrations are already loaded in the database.
+[2024-05-20T01:25:28.866Z]2 migrations were found in the source code.
+[2024-05-20T01:25:28.867Z]2 migrations are new migrations must be executed.
+[2024-05-20T01:25:28.867Z][QUERY]: START TRANSACTION
+[2024-05-20T01:25:28.868Z][QUERY]: CREATE TYPE "public"."transaction_type_enum" AS ENUM ('deposit', 'withdrawal')
+[2024-05-20T01:25:28.870Z][QUERY]: CREATE TYPE "public"."transaction_status_enum" AS ENUM ('pending', 'completed', 'cancelled')
+[2024-05-20T01:25:28.872Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167546594,"Migrations1716167546594"]
+[2024-05-20T01:25:28.916Z]Migration Migrations1716167546594 has been  executed successfully.
+[2024-05-20T01:25:28.916Z][QUERY]: CREATE TABLE "transaction" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "description" character varying(500) NOT NULL, "type" "public"."transaction_type_enum" NOT NULL, "amount" numeric NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'completed', "transaction_at" TIMESTAMP NOT NULL DEFAULT now(), "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "walletId" uuid, CONSTRAINT "PK_89eadb93a89810556e1cbcd6ab9" PRIMARY KEY ("id"))
+[2024-05-20T01:25:28.934Z][QUERY]: CREATE TABLE "user" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(500) NOT NULL, "password" character varying(500) NOT NULL, "email" character varying(500) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), CONSTRAINT "UQ_e12875dfb3b1d92d7d7c5377e22" UNIQUE ("email"), CONSTRAINT "PK_cace4a159ff9f2512dd42373760" PRIMARY KEY ("id"))
+[2024-05-20T01:25:29.003Z][QUERY]: CREATE TABLE "wallet" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(500) NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "userId" uuid, CONSTRAINT "REL_35472b1fe48b6330cd34970956" UNIQUE ("userId"), CONSTRAINT "PK_bec464dd8d54c39c54fd32e2334" PRIMARY KEY ("id"))
+[2024-05-20T01:25:29.017Z][QUERY]: ALTER TABLE "transaction" ADD CONSTRAINT "FK_900eb6b5efaecf57343e4c0e79d" FOREIGN KEY ("walletId") REFERENCES "wallet"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-05-20T01:25:29.026Z][QUERY]: ALTER TABLE "wallet" ADD CONSTRAINT "FK_35472b1fe48b6330cd349709564" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+[2024-05-20T01:25:29.028Z][QUERY]: INSERT INTO "migrations"("timestamp", "name") VALUES ($1, $2) -- PARAMETERS: [1716167678758,"Migrations1716167678758"]
+[2024-05-20T01:25:29.075Z]Migration Migrations1716167678758 has been  executed successfully.
+[2024-05-20T01:25:29.076Z][QUERY]: COMMIT
