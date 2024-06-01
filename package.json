@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest tests/**/*.spec.{js,ts}",
     "watch": "tsc -w",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
@@ -25,8 +25,10 @@
   "license": "ISC",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/jest": "^29.5.12",
     "@types/node": "^20.12.11",
     "nodemon": "^3.1.0",
+    "ts-jest": "^29.1.4",
     "ts-node": "^10.9.2",
     "tsx": "^4.9.3",
     "typescript": "^5.4.5"
@@ -37,10 +39,13 @@
     "@fastify/type-provider-typebox": "^4.0.0",
     "@sinclair/typebox": "^0.32.29",
     "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
     "fastify": "^4.27.0",
     "fastify-cors": "^6.1.0",
+    "jest": "^29.7.0",
     "pg": "^8.11.5",
     "reflect-metadata": "^0.2.2",
     "tsconfig-paths": "^4.2.0",
